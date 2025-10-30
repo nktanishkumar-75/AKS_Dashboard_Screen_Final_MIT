@@ -112,7 +112,7 @@ canvas{display:block;width:100%;height:auto;border-radius:8px;background:#fff}
           <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="addWaterBtn">Add intake</button></div>
           <div style="display:flex;justify-content:space-between;margin-top:8px">
             <div>Consumed: <strong id="waterConsumed">0</strong> ml</div>
-            <div>Remaining: <strong id="waterRemaining">2000</strong> ml</div>
+            <div>Remaining: <strong id="waterRemaining">2000</strong></div>
           </div>
           <input id="waterInterval" type="number" placeholder="Reminder interval (minutes)" value="60" style="margin-top:8px" />
           <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="startHydBtn">Start reminders</button><button class="btn" id="stopHydBtn" style="background:#ef4444">Stop</button></div>
@@ -178,7 +178,7 @@ canvas{display:block;width:100%;height:auto;border-radius:8px;background:#fff}
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* Navigation */
+/* Navigation and settings tile (meal tile removed entirely) */
 document.getElementById('quickGrid').addEventListener('pointerup', e=>{
   const tile = e.target.closest('.tile'); if(!tile) return;
   const target = tile.getAttribute('data-target');
@@ -196,8 +196,8 @@ function toggleSettings(force){
   p.setAttribute('aria-hidden', p.style.display !== 'block');
 }
 
-/* Settings persistence */
-const SETTINGS_KEY = 'lt_settings_final_v3';
+/* Settings persistence + live apply */
+const SETTINGS_KEY = 'lt_settings_final_v4';
 function loadSettings(){ try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'null'); }catch(e){ return null; } }
 function saveSettings(cfg){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(cfg)); }catch(e){} }
 function applySettings(cfg){
@@ -218,7 +218,7 @@ function applySettings(cfg){
   });
 })();
 
-/* 50 jokes and 50 tips */
+/* 50 jokes and 50 tips available through chatbot */
 const jokes = [
 "Why don’t skeletons fight? They don’t have the guts!","Why did the math book look sad? It had too many problems.","Why can’t your nose be 12 inches long? Because then it would be a foot!","Why did the scarecrow win an award? He was outstanding in his field!","What do you call fake spaghetti? An impasta!","Why did the bicycle fall over? It was two-tired!","Why don’t eggs tell jokes? They’d crack each other up!","What do you call cheese that isn’t yours? Nacho cheese!","Why did the golfer bring two pairs of pants? In case he got a hole in one!","Why did the tomato blush? It saw the salad dressing!","Why don’t scientists trust atoms? Because they make up everything!","Why did the cookie go to the doctor? It was feeling crummy!","Why did the computer go to therapy? It had too many bytes!","Why did the student eat his homework? The teacher said it was a piece of cake!","Why did the cat sit on the computer? To keep an eye on the mouse!","Why did the banana go to the party? Because it was a-peeling!","Why did the chicken join a band? Because it had the drumsticks!","Why did the fish blush? Because it saw the ocean’s bottom!","Why did the frog take the bus? His car got toad!","Why did the bee get married? Because he found his honey!","Why did the pencil go to the principal’s office? It had a point to make!","Why did the broom get a promotion? It swept the competition!","Why did the grape stop in the road? It ran out of juice!","Why did the light bulb go to school? To get a little brighter!","Why did the duck get a job? He was tired of winging it!","Why did the elephant bring a suitcase? He was going on a trunk trip!","Why did the calendar apply for a job? It wanted to work full time!","Why did the robot go on vacation? It needed to recharge!","Why did the donut go to therapy? It felt empty inside!","Why did the dog sit in the shade? He didn’t want to be a hot dog!","Why did the astronaut break up? He needed space!","Why did the fish get bad grades? Because it was below sea level!","Why did the cow go to space? To see the moooon!","Why did the skeleton skip the dance? He had no body to go with!","Why did the kangaroo stop coffee? It made him too jumpy!","Why did the snowman call a cab? He had a meltdown!","Why did the pirate buy an eye patch? He couldn’t afford an iPhone!","Why did the balloon go near the needle? To pop the question!","Why did the horse go behind the tree? To change his jockeys!","Why did the snail paint an S on his car? So people would say, ‘Look at that S-car go!’","Why did the giraffe get bad grades? He had his head in the clouds!","Why did the owl get promoted? He was a real hoot!","Why did the mirror fail the test? It couldn’t reflect well!","Why did the volcano get a promotion? It was on fire!","Why did the sandwich go to the gym? To get shredded!"
 ];
@@ -226,30 +226,39 @@ const studyTips = [
 "Break study sessions into 25-minute chunks with 5-minute breaks.","Teach what you learn — explaining helps retention.","Use flashcards for active recall.","Review material within 24 hours.","Create a distraction-free study space.","Set clear goals for each session.","Use mnemonic devices.","Practice past papers under timed conditions.","Summarize notes in your own words.","Use diagrams and mind maps.","Sleep well — memory consolidates during rest.","Stay hydrated and eat brain-friendly foods.","Avoid multitasking.","Use spaced repetition.","Study at your peak energy time.","Group study for tough topics.","Use apps like Anki or Quizlet.","Record yourself explaining topics.","Color-code notes.","Reward yourself after tasks.","Spread learning over days, not cramming.","Apply the Feynman technique.","Take movement/stretch breaks.","Turn off notifications.","Use background music if it helps.","Make a weekly checklist.","Start with the hardest subject.","Use real-world examples.","Ask questions to deepen understanding.","Use sticky notes for key facts.","Teach a friend or sibling.","Watch short explainer videos.","Keep a study journal.","Visualize exam success.","Don’t hesitate to ask for help.","Stay consistent with daily effort.","Use analogies to simplify.","Practice writing essays.","Limit social media.","Use timers to stay on track.","Keep your desk tidy.","Drink water before and during study.","Use site blockers for focus.","Make your own quizzes.","Combine words + visuals (dual coding).","Celebrate small wins.","Stay positive — mindset matters.","Track your time to find patterns.","Reflect on what worked and what didn’t.","Balance study with exercise and relaxation."
 ];
 
-/* Chat functions */
 function appendChat(label, text){
-  const box = $('chatbox'); const el = document.createElement('div'); el.style.margin='8px 0';
+  const box = $('chatbox');
+  const el = document.createElement('div');
+  el.style.margin='8px 0';
   el.innerHTML = `<div style="font-weight:700">${esc(label)}:</div><div style="margin-top:6px">${esc(text)}</div>`;
-  box.appendChild(el); box.scrollTop = box.scrollHeight;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
 }
 $('btnJoke').addEventListener('pointerup', ()=> appendChat('Joke', jokes[Math.floor(Math.random()*jokes.length)]));
 $('btnTip').addEventListener('pointerup', ()=> appendChat('Tip', studyTips[Math.floor(Math.random()*studyTips.length)]));
 $('btnAllJokes').addEventListener('pointerup', ()=> {
-  const box=$('chatbox'); const el=document.createElement('div'); el.style.margin='8px 0';
+  const box = $('chatbox'); const el = document.createElement('div'); el.style.margin='8px 0';
   el.innerHTML = `<div style="font-weight:700">All jokes:</div><div style="margin-top:6px">${jokes.map((j,i)=>`${i+1}. ${esc(j)}`).join('<br/>')}</div>`;
   box.appendChild(el); box.scrollTop = box.scrollHeight;
 });
 $('btnAllTips').addEventListener('pointerup', ()=> {
-  const box=$('chatbox'); const el=document.createElement('div'); el.style.margin='8px 0';
+  const box = $('chatbox'); const el = document.createElement('div'); el.style.margin='8px 0';
   el.innerHTML = `<div style="font-weight:700">All study tips:</div><div style="margin-top:6px">${studyTips.map((t,i)=>`${i+1}. ${esc(t)}`).join('<br/>')}</div>`;
   box.appendChild(el); box.scrollTop = box.scrollHeight;
 });
 
 /* Reminders */
-$('addRemBtn').addEventListener('pointerup', ()=>{ const t=$('remText').value.trim(); if(!t) return; const r=document.createElement('div'); r.className='todo-item'; r.innerHTML=`<div>${esc(t)}</div><div><button class="btn" data-action="del-rem" style="background:#ef4444">Delete</button></div>`; $('remList').prepend(r); $('remText').value=''; });
-$('remList').addEventListener('pointerup', e=>{ const b=e.target.closest('button[data-action="del-rem"]'); if(!b) return; b.closest('.todo-item').remove(); });
+$('addRemBtn').addEventListener('pointerup', ()=>{
+  const t = $('remText').value.trim(); if(!t) return;
+  const r = document.createElement('div'); r.className='todo-item';
+  r.innerHTML = `<div>${esc(t)}</div><div><button class="btn" data-action="del-rem" style="background:#ef4444">Delete</button></div>`;
+  $('remList').prepend(r); $('remText').value='';
+});
+$('remList').addEventListener('pointerup', e=>{
+  const b = e.target.closest('button[data-action="del-rem"]'); if(!b) return; b.closest('.todo-item').remove();
+});
 
-/* Timer & 10 ringtones */
+/* Timer + 10 ringtones */
 const ringtones = [
   {id:'r1',label:'Beep',src:'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'},
   {id:'r2',label:'Marimba',src:'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2e6f3e9b4b.mp3'},
@@ -263,39 +272,53 @@ const ringtones = [
   {id:'r10',label:'Alert',src:'https://cdn.pixabay.com/download/audio/2022/02/20/audio_ab3a610f7f.mp3'}
 ];
 const alarmSelect = $('alarmSelect');
-ringtones.forEach(r=>{ const o=document.createElement('option'); o.value=r.id; o.textContent=r.label; alarmSelect.appendChild(o); const a=document.createElement('audio'); a.id=r.id; a.preload='auto'; a.src=r.src; document.body.appendChild(a); });
+ringtones.forEach(r=>{
+  const o = document.createElement('option'); o.value=r.id; o.textContent=r.label; alarmSelect.appendChild(o);
+  const a = document.createElement('audio'); a.id = r.id; a.preload='auto'; a.src = r.src; document.body.appendChild(a);
+});
 let timerInterval = null;
 $('startTimerBtn').addEventListener('pointerup', ()=>{
   const mins = Number($('minutes').value||0); if(!mins||mins<=0) return alert('Enter minutes');
   let secs = Math.round(mins*60); const disp = $('countdown'); const choice = alarmSelect.value;
   if(timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(()=>{ const m=Math.floor(secs/60), s=secs%60; disp.textContent=`${m}:${s<10?'0':''}${s}`; if(secs-- <= 0){ clearInterval(timerInterval); timerInterval=null; disp.textContent='Done'; try{ const a=document.getElementById(choice); if(a){ a.currentTime=0; a.play().catch(()=>{}); } }catch(e){} } },1000);
+  timerInterval = setInterval(()=>{
+    const m = Math.floor(secs/60), s = secs%60; disp.textContent = `${m}:${s<10?'0':''}${s}`;
+    if(secs-- <= 0){
+      clearInterval(timerInterval); timerInterval=null; disp.textContent='Done';
+      try{ const a = document.getElementById(choice); if(a){ a.currentTime=0; a.play().catch(()=>{}); } }catch(e){}
+    }
+  },1000);
 });
 $('stopTimerBtn').addEventListener('pointerup', ()=>{ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; $('countdown').textContent='Stopped'; } });
 
 /* Hydration */
 let hydrationTimer = null;
-(function initHyd(){ try{ window._lt_water = Number(localStorage.getItem('lt_water')||0); }catch(e){ window._lt_water = 0; } $('waterConsumed').textContent = window._lt_water; $('waterRemaining').textContent = Math.max(Number($('goalWater').value||0)-window._lt_water,0); drawWater(); })();
+(function initHyd(){
+  try{ window._lt_water = Number(localStorage.getItem('lt_water')||0); }catch(e){ window._lt_water = 0; }
+  $('waterConsumed').textContent = window._lt_water;
+  $('waterRemaining').textContent = Math.max(Number($('goalWater').value||0)-window._lt_water,0);
+  drawWater();
+})();
 $('addWaterBtn').addEventListener('pointerup', ()=>{ const v = Number($('logWater').value||0); if(!v) return alert('Enter ml'); window._lt_water = (window._lt_water||0) + v; localStorage.setItem('lt_water', String(window._lt_water)); $('waterConsumed').textContent = window._lt_water; $('waterRemaining').textContent = Math.max(Number($('goalWater').value||0)-window._lt_water,0); drawWater(); updateLeftTotals(); });
 $('startHydBtn').addEventListener('pointerup', ()=>{ const mins = Number($('waterInterval').value||0); if(!mins) return alert('Enter minutes'); if(hydrationTimer) clearInterval(hydrationTimer); hydrationTimer = setInterval(()=> alert('Hydration reminder'), mins*60000); alert('Hydration reminders started'); });
 $('stopHydBtn').addEventListener('pointerup', ()=>{ if(hydrationTimer){ clearInterval(hydrationTimer); hydrationTimer=null; alert('Hydration reminders stopped'); }});
 function drawWater(){ const c = $('waterCanvas'); if(!c) return; const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); const goal = Number($('goalWater').value||0); const consumed = Number(window._lt_water||0); const ratio = goal>0?Math.min(consumed/goal,1):0; const w = (c.width-40)*ratio; ctx.fillStyle='#34d399'; ctx.fillRect(20,c.height/2-12,w,24); ctx.fillStyle='#e6e8f2'; ctx.fillRect(20+w,c.height/2-12,c.width-40-w,24); ctx.fillStyle='#334155'; ctx.font='12px system-ui'; ctx.fillText(`Consumed ${consumed} ml / Goal ${goal} ml`,20,c.height/2-18); }
 
-/* Sleep */
+/* Sleep logging */
 let sleepLogs = [];
 $('logSleepBtn').addEventListener('pointerup', ()=>{ const s = $('sleepTime').value, w = $('wakeTime').value; if(!s||!w) return alert('Select times'); const [sh,sm] = s.split(':').map(Number), [wh,wm] = w.split(':').map(Number); let start = sh*60+sm, end = wh*60+wm; if(end<=start) end+=24*60; const mins = end-start, hours = mins/60; $('lastSleepDuration').textContent = `${Math.floor(hours)}h ${Math.round((hours%1)*60)}m`; const today = new Date().toISOString().slice(0,10); sleepLogs.push({date:today,hours}); const last7 = sleepLogs.slice(-7); const avg = last7.reduce((a,b)=>a+b.hours,0)/(last7.length||1); $('avgSleepDuration').textContent = `${Math.floor(avg)}h ${Math.round((avg%1)*60)}m`; drawSleep(); });
 function drawSleep(){ const c = $('sleepChart'); if(!c) return; const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); const last7 = sleepLogs.slice(-7); if(!last7.length) return; const barW = Math.max(18,(c.width-40)/last7.length - 8); last7.forEach((l,i)=>{ const h = Math.min(12,l.hours)/12*(c.height-30); ctx.fillStyle='#7b61ff'; ctx.fillRect(20 + i*(barW+8), c.height-12-h, barW, h); ctx.fillStyle='#334155'; ctx.font='11px system-ui'; ctx.fillText(l.date.slice(5), 20 + i*(barW+8), c.height-2); }); }
 
-/* Meals removed from UI; charts pull external/imported meals if provided */
+/* Meals removed from UI entirely. Keep import bridge for external host (optional) */
 function mealsKey(){ return 'lt_meals_' + (new Date()).toISOString().slice(0,10); }
 function loadMeals(){ try{ return JSON.parse(localStorage.getItem(mealsKey())||'[]'); }catch(e){ return []; } }
 function saveMeals(list){ try{ localStorage.setItem(mealsKey(), JSON.stringify(list)); }catch(e){} }
 
-/* Charts: meals bar and sleep bar */
+/* Charts: meals bar (will show no-data message unless host imports) and sleep bar */
 function drawMealsBar(){
   const meals = loadMeals();
   const c = $('mealsBar'); if(!c) return; const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-  if(!meals.length){ ctx.fillStyle='#6b7280'; ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.fillText('Meal tracker removed from UI. Use host importMeals(list) to populate.', c.width/2, c.height/2); return; }
+  if(!meals.length){ ctx.fillStyle='#6b7280'; ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.fillText('Meal entry removed from UI. Use host importMeals(list) to populate.', c.width/2, c.height/2); return; }
   const list = meals.slice(-12);
   const padding = 40; const w = c.width - padding*2; const h = c.height - padding*2;
   const maxCal = Math.max(...list.map(m=>m.calories||0), 100);
@@ -333,7 +356,7 @@ function drawSleepBar(){
 /* Charts refresh */
 $('refreshCharts').addEventListener('pointerup', ()=>{ drawMealsBar(); drawSleepBar(); });
 
-/* Boot visuals */
+/* Visual helpers & boot */
 function drawMood(){ const c=$('moodCanvas'); if(!c) return; const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); const v = Number($('moodValue').textContent||5); const w = (v/10)*(c.width-40); ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#2163ff'; ctx.fillRect(20, c.height/2-18, w, 36); ctx.fillStyle='#0f1724'; ctx.font='14px system-ui'; ctx.fillText(`Mood: ${v}`,22,c.height/2-24); }
 
 (function boot(){
@@ -346,7 +369,7 @@ function drawMood(){ const c=$('moodCanvas'); if(!c) return; const ctx=c.getCont
 
 function updateLeftTotals(){ $('todayCaloriesLeft').textContent = $('todayCalories').textContent || '0'; $('waterConsumedLeft').textContent = $('waterConsumed').textContent || '0'; }
 
-/* Host bridge: import meals (since meal UI removed) */
+/* Host bridge - import meals programmatically from App Inventor or host */
 window.LifeTrack = {
   importMeals: function(list){ // list = [{name,calories,portion,ts}]
     const cur = loadMeals(); (list||[]).forEach(i=> cur.push(i)); saveMeals(cur); drawMealsBar();
