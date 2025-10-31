@@ -1,382 +1,661 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>LIFE TRACK DASHBOARD - WELCOME USER</title>
-<style>
-:root{
-  --accent:#2163ff; --accent-2:#7b61ff; --bg:#f6f8fb; --surface:#ffffff;
-  --card:#e8eefc; --muted:#6b7280; --text:#0f1724; --app-brightness:1;
-  --ui-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --ui-font-size:16px;
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);font-family:var(--ui-font);font-size:var(--ui-font-size);color:var(--text);-webkit-font-smoothing:antialiased}
-.container{max-width:920px;margin:14px auto;padding:16px;filter:brightness(var(--app-brightness))}
-.logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
-.title{font-weight:800;font-size:18px;margin-left:12px;display:inline-block;vertical-align:middle}
-.layout{display:grid;grid-template-columns:320px 1fr;gap:16px}
-.left{position:sticky;top:12px;height:fit-content}
-.card{background:var(--surface);border-radius:12px;padding:12px;border:1px solid var(--card);box-shadow:0 10px 30px rgba(16,24,40,0.06)}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.tile{background:linear-gradient(180deg,#fff,#fbfdff);border-radius:8px;padding:12px;cursor:pointer;border:1px solid #eef4ff;min-height:66px;display:flex;flex-direction:column;justify-content:center}
-.tile .label{font-weight:700}
-.btn{background:var(--accent);border:0;color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700}
-input,select,textarea{width:100%;padding:9px;border-radius:8px;border:1px solid var(--card);background:linear-gradient(180deg,#fff,#fbfdff)}
-.screen{display:none;margin-bottom:12px}
-.screen.visible{display:block}
-.chatbox{height:320px;overflow:auto;border-radius:8px;padding:10px;border:1px solid #eef4ff;background:linear-gradient(180deg,#fff,#fcfdff)}
-.small{font-size:13px;color:var(--muted)}
-.todo-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;border:1px solid var(--card);margin:8px 0;background:linear-gradient(180deg,#fff,#fbfdff)}
-canvas{display:block;width:100%;height:auto;border-radius:8px;background:#fff}
-.settings-panel{position:fixed;left:12px;right:12px;top:70px;background:var(--surface);padding:12px;border-radius:12px;border:1px solid var(--card);box-shadow:0 20px 50px rgba(16,24,40,0.12);z-index:999;display:none}
-@media (max-width:880px){ .layout{grid-template-columns:1fr} .left{position:static} }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>MIT AI2 Mobile Dashboard – Pro</title>
+  <!-- 320 x 650 fixed viewport for AI2 WebViewer -->
+  <style>
+    :root{
+      --bg:#f7f9fc;               /* surface background */
+      --header-grad1:#334155;      /* theme primary */
+      --header-grad2:#0ea5e9;      /* theme secondary */
+      --card:#ffffff;              /* cards */
+      --text:#0f172a;              /* main text */
+      --muted:#64748b;             /* muted text */
+      --accent:#0ea5e9;            /* accent */
+      --danger:#ef4444;            /* danger */
+      --link:#2563eb;              /* links */
+      --radius:14px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+      --font-size:16px;            /* base */
+    }
+
+    /* Themes (Settings can toggle these by writing style vars) */
+    .theme-dark{
+      --bg:#0b1220;
+      --card:#121a2a;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --header-grad1:#0ea5e9;
+      --header-grad2:#6366f1;
+      --link:#60a5fa;
+    }
+    .theme-purple{
+      --bg:#fbf7ff;
+      --card:#ffffff;
+      --text:#1f1147;
+      --muted:#6d5ca3;
+      --header-grad1:#8b5cf6;
+      --header-grad2:#d946ef;
+      --link:#7c3aed;
+    }
+
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;height:100%;overflow:hidden;}
+    body{display:flex;justify-content:center;background:var(--bg);font-family:var(--font);font-size:var(--font-size);} 
+
+    .phone{position:fixed;inset:0;margin:auto;width:320px;height:650px;background:var(--bg);overflow:hidden;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
+
+    .header{position:relative;padding:18px 16px 16px;color:#fff}
+    .header::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,var(--header-grad1),var(--header-grad2));z-index:0}
+    .header .wrap{position:relative;z-index:1}
+    .title{font-weight:800;letter-spacing:.4px}
+    .username{font-size:20px;font-weight:700;margin-top:2px}
+
+    .content{flex:1;overflow:auto;padding:12px 14px 16px}
+
+    .section-title{font-size:15px;font-weight:700;color:var(--text);margin:8px 2px 10px}
+
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .card-btn{display:block;text-decoration:none;color:var(--text);background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);border:none;text-align:center}
+    .card-btn:active{transform:translateY(1px)}
+    .icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin:0 auto 6px;color:#fff}
+    .ic1{background:linear-gradient(135deg,#334155,#0ea5e9)}
+    .ic2{background:linear-gradient(135deg,#f093fb,#f5576c)}
+    .ic3{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+    .ic4{background:linear-gradient(135deg,#43e97b,#38f9d7)}
+    .ic5{background:linear-gradient(135deg,#fb7185,#f43f5e)}
+    .ic6{background:linear-gradient(135deg,#22c55e,#10b981)}
+
+    .view{display:none}
+    .view.active{display:block}
+
+    .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);color:var(--text)}
+    .muted{color:var(--muted)}
+    .btn{display:inline-block;border:none;border-radius:10px;padding:10px 12px;background:var(--header-grad1);color:#fff;font-weight:700}
+    .btn.alt{background:var(--header-grad2)}
+    .btn.ghost{background:transparent;border:1px solid currentColor;color:var(--link)}
+    .btn.small{padding:6px 10px;border-radius:8px;font-size:12px}
+    .row{display:flex;justify-content:space-between;align-items:center}
+    .row-gap{display:flex;gap:8px;flex-wrap:wrap}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #e5e7eb;background:transparent;color:var(--text)}
+    textarea{min-height:70px}
+    .list{margin-top:8px;max-height:210px;overflow:auto}
+    .item{padding:8px;border-radius:10px;border:1px solid #e5e7eb;margin-bottom:8px}
+
+    .progress{height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden}
+    .bar{height:100%;width:0;background:var(--accent)}
+
+    .footer{display:flex;gap:8px;justify-content:space-between;margin-top:8px}
+    .link{color:var(--link);text-decoration:none}
+    .pill{font-size:11px;padding:2px 8px;border-radius:999px;background:#e2e8f0;color:#0f172a}
+    .strike{text-decoration:line-through;color:var(--muted)}
+  </style>
 </head>
 <body>
-  <div class="container" id="app">
-    <div style="display:flex;align-items:center">
-      <div class="logo">LT</div>
-      <div class="title">LIFE TRACK DASHBOARD - WELCOME USER</div>
+  <div class="phone" id="appRoot">
+    <!-- HEADER (profile pic & notifications removed per request) -->
+    <div class="header">
+      <div class="wrap">
+        <div class="title">Dashboard</div>
+        <div class="username" id="userName">Welcome User</div>
+      </div>
     </div>
 
-    <div class="layout" style="margin-top:12px">
-      <div class="left">
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="section-title">Quick Actions</div>
+      <div class="grid">
+        <button class="card-btn" data-view="chat">
+          <div class="icon ic1">💬</div>
+          <div>Chat Bot</div>
+        </button>
+        <button class="card-btn" data-view="sleep">
+          <div class="icon ic2">🌙</div>
+          <div>Sleep Log</div>
+        </button>
+        <button class="card-btn" data-view="hydration">
+          <div class="icon ic6">💧</div>
+          <div>Hydration</div>
+        </button>
+        <button class="card-btn" data-view="todo">
+          <div class="icon ic3">📝</div>
+          <div>To‑Do & Reminders</div>
+        </button>
+        <button class="card-btn" data-view="calendar">
+          <div class="icon ic4">📆</div>
+          <div>Calendar</div>
+        </button>
+        <button class="card-btn" data-view="settings">
+          <div class="icon ic5">⚙️</div>
+          <div>App Settings</div>
+        </button>
+      </div>
+
+      <!-- CHAT VIEW -->
+      <div id="view-chat" class="view active" style="margin-top:12px">
         <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Quick actions</div>
-            <div><button class="btn" id="settingsToggle">App settings</button></div>
+          <strong>Chat Bot</strong>
+          <p class="muted" style="margin:6px 0 10px">Tap a button to get a random joke or study tip.</p>
+          <div class="row-gap">
+            <button class="btn small" data-act="joke">Tell me a Joke</button>
+            <button class="btn small alt" data-act="tip">Give a Study Tip</button>
           </div>
-
-          <div style="margin-top:12px" class="grid" id="quickGrid" role="list">
-            <div class="tile" data-target="chat"><div class="label">💬 Chatbot</div></div>
-            <div class="tile" data-target="mood"><div class="label">📊 Mood</div></div>
-            <div class="tile" data-target="rem"><div class="label">✅ Reminders</div></div>
-            <div class="tile" data-target="timer"><div class="label">⏱ Timer</div></div>
-            <div class="tile" id="settingsTile"><div class="label">⚙️ App settings</div></div>
-            <div class="tile" data-target="hydration"><div class="label">💧 Hydration</div></div>
-            <div class="tile" data-target="sleep"><div class="label">🌙 Sleep</div></div>
-            <div class="tile" data-target="charts"><div class="label">📈 Charts</div></div>
-          </div>
-        </div>
-
-        <div style="height:12px"></div>
-
-        <div class="card">
-          <div style="font-weight:700">Totals</div>
-          <div style="margin-top:8px">Today calories: <strong id="todayCaloriesLeft">0</strong> kcal</div>
-          <div>Water consumed: <strong id="waterConsumedLeft">0</strong> ml</div>
+          <div id="chatOutput" class="item" style="margin-top:10px">👋 Hi! I'm ready.</div>
         </div>
       </div>
 
-      <main>
-        <section class="card screen visible" id="chat">
-          <div id="chatbox" class="chatbox" aria-live="polite"></div>
-          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-            <button class="btn" id="btnJoke">Random joke</button>
-            <button class="btn" id="btnTip">Study tip</button>
-            <button class="btn" id="btnAllJokes">Show 50 jokes</button>
-            <button class="btn" id="btnAllTips">Show 50 tips</button>
+      <!-- SLEEP LOG VIEW -->
+      <div id="view-sleep" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>Sleep Log</strong>
+          <p class="muted" style="margin:6px 0 10px">Track bedtime, wake time, quality and notes.</p>
+          <div class="row-gap">
+            <div style="flex:1">
+              <label class="muted">Bedtime</label>
+              <input type="datetime-local" id="sleepBed" />
+            </div>
+            <div style="flex:1">
+              <label class="muted">Wake time</label>
+              <input type="datetime-local" id="sleepWake" />
+            </div>
           </div>
-        </section>
+          <div class="row-gap" style="margin-top:8px">
+            <div style="flex:1">
+              <label class="muted">Quality (1-5)</label>
+              <select id="sleepQuality">
+                <option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>
+              </select>
+            </div>
+            <div style="flex:2">
+              <label class="muted">Notes</label>
+              <input id="sleepNotes" placeholder="e.g., late coffee"/>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn" onclick="saveSleep()">Save Entry</button>
+            <button class="btn ghost" onclick="clearSleep()">Clear All</button>
+          </div>
+          <div class="list" id="sleepList"></div>
+          <div class="item" id="sleepStats" style="background:#f1f5f9">Total hrs (last 7 entries): <b>0.0</b></div>
+        </div>
+      </div>
 
-        <section class="card screen" id="mood">
+      <!-- HYDRATION VIEW (goal & logging) -->
+      <div id="view-hydration" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>Hydration Monitor</strong>
+          <p class="muted" style="margin:6px 0 10px">Set a daily goal and log water.</p>
+          <div class="row-gap">
+            <div style="flex:1">
+              <label class="muted">Daily Goal (ml)</label>
+              <input id="waterGoal" type="number" min="0" step="50" />
+            </div>
+            <div style="align-self:flex-end">
+              <button class="btn small" onclick="setGoal()">Set Goal</button>
+            </div>
+          </div>
+
+          <div class="progress" style="margin:10px 0"><div class="bar" id="waterBar"></div></div>
+          <div class="row" style="color:var(--text);margin-bottom:8px">
+            <div>Today: <b id="waterNow">0</b> / <span id="waterGoalText">0</span> ml</div>
+            <a class="link" href="#" onclick="resetWater();return false;">reset</a>
+          </div>
+
+          <div class="row-gap">
+            <button class="btn small" onclick="addWater(150)">+150 ml</button>
+            <button class="btn small" onclick="addWater(250)">+250 ml</button>
+            <button class="btn small" onclick="addWater(500)">+500 ml</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TO‑DO & REMINDERS VIEW -->
+      <div id="view-todo" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>To‑Do & Reminders</strong>
+          <p class="muted" style="margin:6px 0 10px">Create tasks with optional due date, notes, star (priority), and repeating reminders.</p>
+
+          <div class="row-gap">
+            <input id="todoTitle" placeholder="Task title (required)" />
+            <input id="todoDue" type="datetime-local" />
+            <input id="todoEvery" type="number" min="5" step="5" placeholder="Remind every (min)" />
+            <input id="todoNotes" placeholder="Notes (optional)" />
+            <label class="muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="todoStar"/> Star</label>
+            <button class="btn" onclick="addTask()">Add Task</button>
+          </div>
+
+          <div class="list" id="todoList"></div>
+          <div class="row" style="margin-top:6px">
+            <span class="muted" id="todoSummary">0 tasks</span>
+            <div class="row-gap">
+              <button class="btn small ghost" onclick="clearDone()">Clear Completed</button>
+              <button class="btn small ghost" onclick="clearAllTasks()">Clear All</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR (placeholder for AI2 screen) -->
+      <div id="view-calendar" class="view" style="margin-top:12px">
+        <div class="card"><strong>Calendar</strong>
+          <p class="muted">Open your dedicated AI2 Calendar screen.
+            <a class="link" href="#" onclick="emitAI2('calendar:open');return false;">Open in AI2</a>
+          </p></div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div id="view-settings" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>App Settings</strong>
+          <p class="muted" style="margin:6px 0 10px">Theme, font size and font family are saved locally.</p>
+          <div>
+            <label class="muted">Theme</label>
+            <select id="themeSel" onchange="applyTheme(this.value)">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="purple">Purple</option>
+            </select>
+          </div>
           <div style="margin-top:8px">
-            <button class="btn" id="enterMood">Enter mood (1-10)</button>
-            <div style="margin-top:8px">Current: <strong id="moodValue">5</strong></div>
-            <canvas id="moodCanvas" width="720" height="140" style="margin-top:8px"></canvas>
+            <label class="muted">Font Size</label>
+            <select id="fontSizeSel" onchange="applyFontSize(this.value)">
+              <option value="14">Small</option>
+              <option value="16" selected>Medium</option>
+              <option value="18">Large</option>
+              <option value="20">X-Large</option>
+            </select>
           </div>
-        </section>
-
-        <section class="card screen" id="rem">
-          <input id="remText" placeholder="Reminder text" />
-          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="addRemBtn">Add</button></div>
-          <div id="remList" style="margin-top:8px"></div>
-        </section>
-
-        <section class="card screen" id="timer">
-          <input id="minutes" type="number" placeholder="Minutes" />
-          <label class="small" style="margin-top:8px;display:block">Choose ringtone</label>
-          <select id="alarmSelect"></select>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="startTimerBtn">Start</button>
-            <button class="btn" id="stopTimerBtn" style="background:#ef4444">Stop</button>
+          <div style="margin-top:8px">
+            <label class="muted">Font Style (10 options)</label>
+            <select id="fontSel" onchange="applyFont(this.value)">
+              <option value="system">System Default</option>
+              <option value="serif">Serif (Georgia)</option>
+              <option value="mono">Monospace</option>
+              <option value="inter">Inter/Segoe UI</option>
+              <option value="poppins">Poppins/SF Pro</option>
+              <option value="osans">Open Sans/Arial</option>
+              <option value="nunito">Nunito/Verdana</option>
+              <option value="robotoslab">Roboto Slab/Cambria</option>
+              <option value="merriweather">Merriweather/Times</option>
+              <option value="sourcesans">Source Sans/Helvetica</option>
+            </select>
           </div>
-          <div id="countdown" style="margin-top:12px;font-weight:700"></div>
-        </section>
-
-        <section class="card screen" id="hydration">
-          <input id="goalWater" type="number" placeholder="Daily goal (ml)" value="2000" />
-          <input id="logWater" type="number" placeholder="Log intake (ml)" value="250" />
-          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="addWaterBtn">Add intake</button></div>
-          <div style="display:flex;justify-content:space-between;margin-top:8px">
-            <div>Consumed: <strong id="waterConsumed">0</strong> ml</div>
-            <div>Remaining: <strong id="waterRemaining">2000</strong></div>
+          <div class="footer">
+            <button class="btn" onclick="saveSettings()">Save</button>
+            <button class="btn ghost" onclick="resetSettings()">Reset</button>
           </div>
-          <input id="waterInterval" type="number" placeholder="Reminder interval (minutes)" value="60" style="margin-top:8px" />
-          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="startHydBtn">Start reminders</button><button class="btn" id="stopHydBtn" style="background:#ef4444">Stop</button></div>
-          <canvas id="waterCanvas" width="720" height="100" style="margin-top:8px"></canvas>
-        </section>
-
-        <section class="card screen" id="sleep">
-          <input id="sleepTime" type="time" />
-          <input id="wakeTime" type="time" />
-          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="logSleepBtn">Log sleep</button></div>
-          <div style="margin-top:8px">Last duration: <strong id="lastSleepDuration">0h 0m</strong> · 7-day avg: <strong id="avgSleepDuration">0h 0m</strong></div>
-          <canvas id="sleepChart" width="720" height="120" style="margin-top:8px"></canvas>
-        </section>
-
-        <section class="card screen" id="charts">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Charts</div>
-            <div><button class="btn" id="refreshCharts">Refresh</button></div>
-         </div>
-         <div style="margin-top:12px">
-           <canvas id="mealsBar" width="720" height="220"></canvas>
-         </div>
-         <div style="margin-top:12px">
-           <canvas id="sleepBar" width="720" height="140"></canvas>
-         </div>
-        </section>
-
-      </main>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="settings-panel card" id="settingsPanel" aria-hidden="true">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div style="font-weight:700">App settings</div>
-      <div style="display:flex;gap:8px"><button class="btn" id="saveSettings">Save</button><button class="btn" id="closeSettings" style="background:#ef4444">Close</button></div>
-    </div>
+  <script>
+    // Robust click handling for AI2 WebViewer (some builds restrict inline onclick)
+    document.addEventListener('click', function(e){
+      var v = e.target.closest('[data-view]');
+      if(v){ e.preventDefault(); switchView(v.getAttribute('data-view')); }
+      var act = e.target.closest('[data-act]');
+      if(act){ e.preventDefault(); var k=act.getAttribute('data-act'); if(k==='joke') showRandom('joke'); if(k==='tip') showRandom('tip'); }
+    });
 
-    <div style="margin-top:10px;display:grid;gap:8px">
-      <label class="small">Font style</label>
-      <select id="fontStyle">
-        <option value="system-ui, -apple-system, 'Segoe UI', Roboto, Arial">System</option>
-        <option value="'Inter', system-ui, -apple-system, Roboto">Inter</option>
-        <option value="'Roboto', system-ui, -apple-system, Arial">Roboto</option>
-        <option value="'Helvetica Neue', Arial, sans-serif">Helvetica Neue</option>
-        <option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option>
-        <option value="'Georgia', serif">Georgia</option>
-        <option value="'Times New Roman', Times, serif">Times</option>
-        <option value="'Courier New', monospace">Courier New</option>
-        <option value="'Poppins', system-ui, sans-serif">Poppins</option>
-        <option value="'Open Sans', system-ui, sans-serif">Open Sans</option>
-      </select>
-
-      <label class="small">Font size (px)</label>
-      <input id="fontSize" type="range" min="12" max="22" value="16" />
-
-      <label class="small">App brightness</label>
-      <input id="appBrightness" type="range" min="0.5" max="1.3" step="0.05" value="1" />
-    </div>
-  </div>
-
-<script>
-/* Helpers */
-const $ = id => document.getElementById(id);
-function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-/* Navigation and settings tile (meal tile removed entirely) */
-document.getElementById('quickGrid').addEventListener('pointerup', e=>{
-  const tile = e.target.closest('.tile'); if(!tile) return;
-  const target = tile.getAttribute('data-target');
-  if(target){
-    document.querySelectorAll('.screen.visible').forEach(s=>s.classList.remove('visible'));
-    const screen = document.getElementById(target); if(!screen) return;
-    screen.classList.add('visible'); screen.scrollIntoView({behavior:'smooth',block:'center'});
-  } else if(tile.id === 'settingsTile'){ toggleSettings(true); }
-});
-$('settingsToggle').addEventListener('pointerup', ()=> toggleSettings(true));
-$('closeSettings').addEventListener('pointerup', ()=> toggleSettings(false));
-function toggleSettings(force){
-  const p = $('settingsPanel');
-  p.style.display = (force === true) ? 'block' : (p.style.display === 'block' ? 'none' : 'block');
-  p.setAttribute('aria-hidden', p.style.display !== 'block');
-}
-
-/* Settings persistence + live apply */
-const SETTINGS_KEY = 'lt_settings_final_v4';
-function loadSettings(){ try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'null'); }catch(e){ return null; } }
-function saveSettings(cfg){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(cfg)); }catch(e){} }
-function applySettings(cfg){
-  if(!cfg) return;
-  if(cfg.fontStyle) document.documentElement.style.setProperty('--ui-font', cfg.fontStyle);
-  if(cfg.fontSize) document.documentElement.style.setProperty('--ui-font-size', cfg.fontSize + 'px');
-  if(cfg.appBrightness) document.documentElement.style.setProperty('--app-brightness', cfg.appBrightness);
-}
-(function initSettings(){
-  const s = loadSettings();
-  if(s){ applySettings(s); $('fontStyle').value = s.fontStyle || getComputedStyle(document.documentElement).getPropertyValue('--ui-font'); $('fontSize').value = s.fontSize || 16; $('appBrightness').value = s.appBrightness || 1; }
-  $('fontStyle').addEventListener('change', e=> document.documentElement.style.setProperty('--ui-font', e.target.value));
-  $('fontSize').addEventListener('input', e=> document.documentElement.style.setProperty('--ui-font-size', e.target.value + 'px'));
-  $('appBrightness').addEventListener('input', e=> document.documentElement.style.setProperty('--app-brightness', e.target.value));
-  $('saveSettings').addEventListener('pointerup', ()=>{
-    const cfg = { fontStyle: $('fontStyle').value, fontSize: Number($('fontSize').value), appBrightness: Number($('appBrightness').value) };
-    saveSettings(cfg); applySettings(cfg); toggleSettings(false);
-  });
-})();
-
-/* 50 jokes and 50 tips available through chatbot */
-const jokes = [
-"Why don’t skeletons fight? They don’t have the guts!","Why did the math book look sad? It had too many problems.","Why can’t your nose be 12 inches long? Because then it would be a foot!","Why did the scarecrow win an award? He was outstanding in his field!","What do you call fake spaghetti? An impasta!","Why did the bicycle fall over? It was two-tired!","Why don’t eggs tell jokes? They’d crack each other up!","What do you call cheese that isn’t yours? Nacho cheese!","Why did the golfer bring two pairs of pants? In case he got a hole in one!","Why did the tomato blush? It saw the salad dressing!","Why don’t scientists trust atoms? Because they make up everything!","Why did the cookie go to the doctor? It was feeling crummy!","Why did the computer go to therapy? It had too many bytes!","Why did the student eat his homework? The teacher said it was a piece of cake!","Why did the cat sit on the computer? To keep an eye on the mouse!","Why did the banana go to the party? Because it was a-peeling!","Why did the chicken join a band? Because it had the drumsticks!","Why did the fish blush? Because it saw the ocean’s bottom!","Why did the frog take the bus? His car got toad!","Why did the bee get married? Because he found his honey!","Why did the pencil go to the principal’s office? It had a point to make!","Why did the broom get a promotion? It swept the competition!","Why did the grape stop in the road? It ran out of juice!","Why did the light bulb go to school? To get a little brighter!","Why did the duck get a job? He was tired of winging it!","Why did the elephant bring a suitcase? He was going on a trunk trip!","Why did the calendar apply for a job? It wanted to work full time!","Why did the robot go on vacation? It needed to recharge!","Why did the donut go to therapy? It felt empty inside!","Why did the dog sit in the shade? He didn’t want to be a hot dog!","Why did the astronaut break up? He needed space!","Why did the fish get bad grades? Because it was below sea level!","Why did the cow go to space? To see the moooon!","Why did the skeleton skip the dance? He had no body to go with!","Why did the kangaroo stop coffee? It made him too jumpy!","Why did the snowman call a cab? He had a meltdown!","Why did the pirate buy an eye patch? He couldn’t afford an iPhone!","Why did the balloon go near the needle? To pop the question!","Why did the horse go behind the tree? To change his jockeys!","Why did the snail paint an S on his car? So people would say, ‘Look at that S-car go!’","Why did the giraffe get bad grades? He had his head in the clouds!","Why did the owl get promoted? He was a real hoot!","Why did the mirror fail the test? It couldn’t reflect well!","Why did the volcano get a promotion? It was on fire!","Why did the sandwich go to the gym? To get shredded!"
-];
-const studyTips = [
-"Break study sessions into 25-minute chunks with 5-minute breaks.","Teach what you learn — explaining helps retention.","Use flashcards for active recall.","Review material within 24 hours.","Create a distraction-free study space.","Set clear goals for each session.","Use mnemonic devices.","Practice past papers under timed conditions.","Summarize notes in your own words.","Use diagrams and mind maps.","Sleep well — memory consolidates during rest.","Stay hydrated and eat brain-friendly foods.","Avoid multitasking.","Use spaced repetition.","Study at your peak energy time.","Group study for tough topics.","Use apps like Anki or Quizlet.","Record yourself explaining topics.","Color-code notes.","Reward yourself after tasks.","Spread learning over days, not cramming.","Apply the Feynman technique.","Take movement/stretch breaks.","Turn off notifications.","Use background music if it helps.","Make a weekly checklist.","Start with the hardest subject.","Use real-world examples.","Ask questions to deepen understanding.","Use sticky notes for key facts.","Teach a friend or sibling.","Watch short explainer videos.","Keep a study journal.","Visualize exam success.","Don’t hesitate to ask for help.","Stay consistent with daily effort.","Use analogies to simplify.","Practice writing essays.","Limit social media.","Use timers to stay on track.","Keep your desk tidy.","Drink water before and during study.","Use site blockers for focus.","Make your own quizzes.","Combine words + visuals (dual coding).","Celebrate small wins.","Stay positive — mindset matters.","Track your time to find patterns.","Reflect on what worked and what didn’t.","Balance study with exercise and relaxation."
-];
-
-function appendChat(label, text){
-  const box = $('chatbox');
-  const el = document.createElement('div');
-  el.style.margin='8px 0';
-  el.innerHTML = `<div style="font-weight:700">${esc(label)}:</div><div style="margin-top:6px">${esc(text)}</div>`;
-  box.appendChild(el);
-  box.scrollTop = box.scrollHeight;
-}
-$('btnJoke').addEventListener('pointerup', ()=> appendChat('Joke', jokes[Math.floor(Math.random()*jokes.length)]));
-$('btnTip').addEventListener('pointerup', ()=> appendChat('Tip', studyTips[Math.floor(Math.random()*studyTips.length)]));
-$('btnAllJokes').addEventListener('pointerup', ()=> {
-  const box = $('chatbox'); const el = document.createElement('div'); el.style.margin='8px 0';
-  el.innerHTML = `<div style="font-weight:700">All jokes:</div><div style="margin-top:6px">${jokes.map((j,i)=>`${i+1}. ${esc(j)}`).join('<br/>')}</div>`;
-  box.appendChild(el); box.scrollTop = box.scrollHeight;
-});
-$('btnAllTips').addEventListener('pointerup', ()=> {
-  const box = $('chatbox'); const el = document.createElement('div'); el.style.margin='8px 0';
-  el.innerHTML = `<div style="font-weight:700">All study tips:</div><div style="margin-top:6px">${studyTips.map((t,i)=>`${i+1}. ${esc(t)}`).join('<br/>')}</div>`;
-  box.appendChild(el); box.scrollTop = box.scrollHeight;
-});
-
-/* Reminders */
-$('addRemBtn').addEventListener('pointerup', ()=>{
-  const t = $('remText').value.trim(); if(!t) return;
-  const r = document.createElement('div'); r.className='todo-item';
-  r.innerHTML = `<div>${esc(t)}</div><div><button class="btn" data-action="del-rem" style="background:#ef4444">Delete</button></div>`;
-  $('remList').prepend(r); $('remText').value='';
-});
-$('remList').addEventListener('pointerup', e=>{
-  const b = e.target.closest('button[data-action="del-rem"]'); if(!b) return; b.closest('.todo-item').remove();
-});
-
-/* Timer + 10 ringtones */
-const ringtones = [
-  {id:'r1',label:'Beep',src:'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'},
-  {id:'r2',label:'Marimba',src:'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2e6f3e9b4b.mp3'},
-  {id:'r3',label:'Bell',src:'https://cdn.pixabay.com/download/audio/2021/09/30/audio_2c9b5f3b3d.mp3'},
-  {id:'r4',label:'Digital',src:'https://cdn.pixabay.com/download/audio/2022/12/06/audio_7d2a6f9c6f.mp3'},
-  {id:'r5',label:'Chime',src:'https://cdn.pixabay.com/download/audio/2021/08/04/audio_24c7b3d98b.mp3'},
-  {id:'r6',label:'Tone A',src:'https://cdn.pixabay.com/download/audio/2022/08/03/audio_7f8f6f1a37.mp3'},
-  {id:'r7',label:'Tone B',src:'https://cdn.pixabay.com/download/audio/2022/12/08/audio_2c2f5e4b6a.mp3'},
-  {id:'r8',label:'Pluck',src:'https://cdn.pixabay.com/download/audio/2023/01/13/audio_9c8d9e89ab.mp3'},
-  {id:'r9',label:'Ping',src:'https://cdn.pixabay.com/download/audio/2021/10/11/audio_3e67b1d9c2.mp3'},
-  {id:'r10',label:'Alert',src:'https://cdn.pixabay.com/download/audio/2022/02/20/audio_ab3a610f7f.mp3'}
-];
-const alarmSelect = $('alarmSelect');
-ringtones.forEach(r=>{
-  const o = document.createElement('option'); o.value=r.id; o.textContent=r.label; alarmSelect.appendChild(o);
-  const a = document.createElement('audio'); a.id = r.id; a.preload='auto'; a.src = r.src; document.body.appendChild(a);
-});
-let timerInterval = null;
-$('startTimerBtn').addEventListener('pointerup', ()=>{
-  const mins = Number($('minutes').value||0); if(!mins||mins<=0) return alert('Enter minutes');
-  let secs = Math.round(mins*60); const disp = $('countdown'); const choice = alarmSelect.value;
-  if(timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(()=>{
-    const m = Math.floor(secs/60), s = secs%60; disp.textContent = `${m}:${s<10?'0':''}${s}`;
-    if(secs-- <= 0){
-      clearInterval(timerInterval); timerInterval=null; disp.textContent='Done';
-      try{ const a = document.getElementById(choice); if(a){ a.currentTime=0; a.play().catch(()=>{}); } }catch(e){}
+    /* =============================
+       HELPER — AI2 WebViewer bridge
+       ============================= */
+    function emitAI2(message){
+      try{
+        if(window.AppInventor && window.AppInventor.setWebViewString){
+          window.AppInventor.setWebViewString(String(message));
+        }else{
+          console.log('[AI2]', message); // standalone mode
+        }
+      }catch(e){console.log('AI2 emit error', e)}
     }
-  },1000);
-});
-$('stopTimerBtn').addEventListener('pointerup', ()=>{ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; $('countdown').textContent='Stopped'; } });
 
-/* Hydration */
-let hydrationTimer = null;
-(function initHyd(){
-  try{ window._lt_water = Number(localStorage.getItem('lt_water')||0); }catch(e){ window._lt_water = 0; }
-  $('waterConsumed').textContent = window._lt_water;
-  $('waterRemaining').textContent = Math.max(Number($('goalWater').value||0)-window._lt_water,0);
-  drawWater();
-})();
-$('addWaterBtn').addEventListener('pointerup', ()=>{ const v = Number($('logWater').value||0); if(!v) return alert('Enter ml'); window._lt_water = (window._lt_water||0) + v; localStorage.setItem('lt_water', String(window._lt_water)); $('waterConsumed').textContent = window._lt_water; $('waterRemaining').textContent = Math.max(Number($('goalWater').value||0)-window._lt_water,0); drawWater(); updateLeftTotals(); });
-$('startHydBtn').addEventListener('pointerup', ()=>{ const mins = Number($('waterInterval').value||0); if(!mins) return alert('Enter minutes'); if(hydrationTimer) clearInterval(hydrationTimer); hydrationTimer = setInterval(()=> alert('Hydration reminder'), mins*60000); alert('Hydration reminders started'); });
-$('stopHydBtn').addEventListener('pointerup', ()=>{ if(hydrationTimer){ clearInterval(hydrationTimer); hydrationTimer=null; alert('Hydration reminders stopped'); }});
-function drawWater(){ const c = $('waterCanvas'); if(!c) return; const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); const goal = Number($('goalWater').value||0); const consumed = Number(window._lt_water||0); const ratio = goal>0?Math.min(consumed/goal,1):0; const w = (c.width-40)*ratio; ctx.fillStyle='#34d399'; ctx.fillRect(20,c.height/2-12,w,24); ctx.fillStyle='#e6e8f2'; ctx.fillRect(20+w,c.height/2-12,c.width-40-w,24); ctx.fillStyle='#334155'; ctx.font='12px system-ui'; ctx.fillText(`Consumed ${consumed} ml / Goal ${goal} ml`,20,c.height/2-18); }
+    function switchView(name){
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      const el = document.getElementById('view-'+name);
+      if(el) el.classList.add('active');
+      emitAI2('nav:'+name);
+    }
 
-/* Sleep logging */
-let sleepLogs = [];
-$('logSleepBtn').addEventListener('pointerup', ()=>{ const s = $('sleepTime').value, w = $('wakeTime').value; if(!s||!w) return alert('Select times'); const [sh,sm] = s.split(':').map(Number), [wh,wm] = w.split(':').map(Number); let start = sh*60+sm, end = wh*60+wm; if(end<=start) end+=24*60; const mins = end-start, hours = mins/60; $('lastSleepDuration').textContent = `${Math.floor(hours)}h ${Math.round((hours%1)*60)}m`; const today = new Date().toISOString().slice(0,10); sleepLogs.push({date:today,hours}); const last7 = sleepLogs.slice(-7); const avg = last7.reduce((a,b)=>a+b.hours,0)/(last7.length||1); $('avgSleepDuration').textContent = `${Math.floor(avg)}h ${Math.round((avg%1)*60)}m`; drawSleep(); });
-function drawSleep(){ const c = $('sleepChart'); if(!c) return; const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); const last7 = sleepLogs.slice(-7); if(!last7.length) return; const barW = Math.max(18,(c.width-40)/last7.length - 8); last7.forEach((l,i)=>{ const h = Math.min(12,l.hours)/12*(c.height-30); ctx.fillStyle='#7b61ff'; ctx.fillRect(20 + i*(barW+8), c.height-12-h, barW, h); ctx.fillStyle='#334155'; ctx.font='11px system-ui'; ctx.fillText(l.date.slice(5), 20 + i*(barW+8), c.height-2); }); }
+    /* =============================
+       CHAT BOT — jokes & study tips (50 each)
+       ============================= */
+    const jokes=[
+      "Why did the math book look sad? It had too many problems!",
+      "Parallel lines have so much in common. It’s a shame they’ll never meet.",
+      "Why don’t scientists trust atoms? Because they make up everything!",
+      "I told my computer I needed a break, and it said ‘No problem— I’ll go to sleep.’",
+      "Why was 6 afraid of 7? Because 7 8 9!",
+      "What do you call fake spaghetti? An impasta!",
+      "Why did the student eat his homework? The teacher said it was a piece of cake!",
+      "What do you call cheese that isn’t yours? Nacho cheese!",
+      "Why did the scarecrow win an award? He was outstanding in his field!",
+      "Why can’t you trust stairs? They’re always up to something.",
+      "How does a penguin build its house? Igloos it together.",
+      "Why did the computer go to the doctor? It caught a virus!",
+      "I would tell you a construction pun, but I’m still working on it.",
+      "Why are ghosts bad liars? Because they are too transparent.",
+      "Why did the bicycle fall over? It was two-tired.",
+      "Why did the tomato blush? It saw the salad dressing!",
+      "How do you organize a space party? You planet.",
+      "What do you call a sleeping bull? A bulldozer.",
+      "Why don’t programmers like nature? It has too many bugs.",
+      "What do you call a bear with no teeth? A gummy bear.",
+      "Why was the computer cold? It left its Windows open.",
+      "What do you call a fish wearing a bowtie? Sofishticated.",
+      "Why did the cookie go to the hospital? It felt crummy.",
+      "What’s orange and sounds like a parrot? A carrot.",
+      "Why did the golfer bring two pairs of pants? In case he got a hole in one.",
+      "How do you make a tissue dance? Put a little boogie in it.",
+      "Why did the music teacher go to jail? She got caught with too many sharp objects.",
+      "What do you call an alligator in a vest? An investigator.",
+      "What did one wall say to the other? I’ll meet you at the corner.",
+      "Why did the picture go to jail? It was framed.",
+      "What do you call a dinosaur with an extensive vocabulary? A thesaurus.",
+      "Why don’t eggs tell jokes? They’d crack each other up.",
+      "What do you call a pile of cats? A meowtain.",
+      "Why did the student bring a ladder to school? Because they were going to high school.",
+      "Why don’t skeletons fight each other? They don’t have the guts.",
+      "How do you catch a squirrel? Climb a tree and act like a nut.",
+      "What do you call a cow with no legs? Ground beef.",
+      "Why was the broom late? It swept in.",
+      "What do you call a can opener that doesn’t work? A can’t opener.",
+      "Why did the belt get arrested? For holding up a pair of pants.",
+      "Why did the computer show up at work late? It had a hard drive.",
+      "What do you call a boomerang that doesn’t come back? A stick.",
+      "Why can’t a nose be 12 inches long? Then it would be a foot.",
+      "What do you get when you cross a snowman and a vampire? Frostbite.",
+      "Why did the smartphone need glasses? It lost all its contacts.",
+      "What did the ocean say to the beach? Nothing, it just waved.",
+      "What do you call a factory that makes okay products? A satisfactory.",
+      "Why was the math lecture so long? The professor kept going off on a tangent.",
+      "What’s a computer’s favorite snack? Microchips.",
+      "Why did the physics book look nervous? Too much pressure!"
+    ];
 
-/* Meals removed from UI entirely. Keep import bridge for external host (optional) */
-function mealsKey(){ return 'lt_meals_' + (new Date()).toISOString().slice(0,10); }
-function loadMeals(){ try{ return JSON.parse(localStorage.getItem(mealsKey())||'[]'); }catch(e){ return []; } }
-function saveMeals(list){ try{ localStorage.setItem(mealsKey(), JSON.stringify(list)); }catch(e){} }
+    const tips=[
+      "Study in short focused bursts (25–30 min) with 5 min breaks.",
+      "Teach a concept to someone else to test your understanding.",
+      "Summarize each chapter in 5 bullet points.",
+      "Write flashcards for tough terms and review daily.",
+      "Do past papers under timed conditions.",
+      "Turn headings into questions and answer them.",
+      "Space your revision—don’t cram the night before.",
+      "Sleep 7–9 hours; memory forms during sleep.",
+      "Use the Feynman technique: explain simply.",
+      "Study at the same time every day to build habit.",
+      "Remove phone distractions for 30 minutes at a time.",
+      "Set one clear goal per session (e.g., 10 problems).",
+      "Highlight sparingly, then convert highlights to notes.",
+      "Use active recall: close the book and write what you remember.",
+      "Turn big tasks into smaller steps with deadlines.",
+      "Make your own examples to check understanding.",
+      "If stuck 10 minutes, mark and move on.",
+      "Study hardest topics when your energy is highest.",
+      "Mix topics (interleaving) to improve learning.",
+      "Keep a ‘mistake log’ and revisit weekly.",
+      "Draw diagrams—visuals boost memory.",
+      "Record key formulas on a single cheat sheet.",
+      "Practice retrieval with blank paper.",
+      "Use apps only as tools, not distractions.",
+      "Test yourself right after learning and again tomorrow.",
+      "Explain topics aloud as if tutoring.",
+      "Study groups: compare methods, not just answers.",
+      "Eat light, hydrate—avoid sugar crashes.",
+      "Schedule rewards after sessions to stay motivated.",
+      "Start with a 2‑minute ‘just start’ rule to beat procrastination.",
+      "Keep your desk clear; clutter drains focus.",
+      "Rewrite notes into concise one‑pagers.",
+      "Create mnemonics for tricky lists.",
+      "Use margins to note ‘why’ beside each step.",
+      "Color‑code by concept, not by aesthetic.",
+      "Pair a boring task with a favorite drink or playlist.",
+      "Track progress daily to see momentum.",
+      "Ask ‘what would this look like on the exam?’",
+      "Study near natural light to stay alert.",
+      "Prioritize understanding over memorizing first.",
+      "Take a 10‑minute walk to refresh concentration.",
+      "Set phone to Do Not Disturb while studying.",
+      "Use the Cornell note method and review weekly.",
+      "Start assignments early; first drafts are messy.",
+      "Check units and assumptions in every problem.",
+      "Re‑solve missed problems without looking.",
+      "Keep a separate formula book.",
+      "Review the syllabus—study what’s assessed.",
+      "End sessions by planning the next one.",
+      "Believe in progress, not perfection."
+    ];
 
-/* Charts: meals bar (will show no-data message unless host imports) and sleep bar */
-function drawMealsBar(){
-  const meals = loadMeals();
-  const c = $('mealsBar'); if(!c) return; const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-  if(!meals.length){ ctx.fillStyle='#6b7280'; ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.fillText('Meal entry removed from UI. Use host importMeals(list) to populate.', c.width/2, c.height/2); return; }
-  const list = meals.slice(-12);
-  const padding = 40; const w = c.width - padding*2; const h = c.height - padding*2;
-  const maxCal = Math.max(...list.map(m=>m.calories||0), 100);
-  const barWidth = Math.max(16, (w / list.length) * 0.7);
-  list.forEach((m,i)=>{
-    const x = padding + i * (w / list.length) + ((w / list.length) - barWidth)/2;
-    const barH = (m.calories / maxCal) * h;
-    const y = padding + (h - barH);
-    ctx.fillStyle = '#ff9f43'; ctx.fillRect(x, y, barWidth, barH);
-    ctx.fillStyle = '#111827'; ctx.font='11px system-ui'; ctx.textAlign='center';
-    const label = (m.name||'Meal').length>10 ? (m.name||'Meal').slice(0,10)+'…' : (m.name||'Meal');
-    ctx.fillText(label, x + barWidth/2, padding + h + 14);
-    ctx.fillText((m.calories||0) + ' kcal', x + barWidth/2, y - 6);
-  });
-}
-function drawSleepBar(){
-  const c = $('sleepBar'); if(!c) return; const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-  const last7 = sleepLogs.slice(-7);
-  if(!last7.length){ ctx.fillStyle='#6b7280'; ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.fillText('No sleep data', c.width/2, c.height/2); return; }
-  const padding = 28; const w = c.width - padding*2; const h = c.height - padding*2;
-  const maxH = Math.max(...last7.map(s=>s.hours||0), 8);
-  const barW = Math.max(18, (w / last7.length) * 0.7);
-  last7.forEach((l,i)=>{
-    const x = padding + i * (w / last7.length) + ((w / last7.length) - barW)/2;
-    const barH = (l.hours / maxH) * h;
-    const y = padding + (h - barH);
-    ctx.fillStyle = '#7b61ff';
-    ctx.fillRect(x, y, barW, barH);
-    ctx.fillStyle = '#111827'; ctx.font='11px system-ui'; ctx.textAlign='center';
-    ctx.fillText(l.date.slice(5), x + barW/2, padding + h + 14);
-    ctx.fillText((l.hours||0).toFixed(1) + 'h', x + barW/2, y - 6);
-  });
-}
+    function randFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
+    function showRandom(kind){
+      const out=document.getElementById('chatOutput');
+      const msg = kind==='joke'? randFrom(jokes): randFrom(tips);
+      out.textContent = msg;
+      emitAI2('chat:'+kind);
+    }
 
-/* Charts refresh */
-$('refreshCharts').addEventListener('pointerup', ()=>{ drawMealsBar(); drawSleepBar(); });
+    /* =============================
+       SLEEP LOG — localStorage
+       ============================= */
+    const SKEY='sleep.entries.v1';
+    function getSleep(){try{return JSON.parse(localStorage.getItem(SKEY)||'[]')}catch{ return []}}
+    function setSleep(list){localStorage.setItem(SKEY,JSON.stringify(list));renderSleep()}
+    function durationHours(a,b){const ms=(new Date(b)-new Date(a));return ms>0? (ms/36e5):0}
+    function saveSleep(){
+      const bed=document.getElementById('sleepBed').value;
+      const wake=document.getElementById('sleepWake').value;
+      const q=document.getElementById('sleepQuality').value;
+      const notes=document.getElementById('sleepNotes').value.trim();
+      if(!bed||!wake){alert('Please enter bedtime and wake time');return}
+      const h=+durationHours(bed,wake).toFixed(2);
+      const list=getSleep();
+      list.unshift({bed,wake,q:+q,notes,h,ts:Date.now()});
+      setSleep(list.slice(0,100));
+      emitAI2('sleep:saved');
+      document.getElementById('sleepNotes').value='';
+    }
+    function clearSleep(){if(confirm('Delete all sleep entries?')){setSleep([]);emitAI2('sleep:cleared')}}
+    function renderSleep(){
+      const list=getSleep();
+      const box=document.getElementById('sleepList');
+      box.innerHTML='';
+      list.forEach((e,i)=>{
+        const div=document.createElement('div');
+        div.className='item';
+        div.innerHTML = `<b>${new Date(e.bed).toLocaleString()} → ${new Date(e.wake).toLocaleString()}</b><br>
+          Hours: <b>${e.h.toFixed(2)}</b> · Quality: <b>${e.q}</b><br>
+          <span class="muted">${e.notes||''}</span>
+          <div class="footer"><button class="btn small ghost" onclick="delSleep(${i})">Delete</button></div>`;
+        box.appendChild(div);
+      });
+      const last7=list.slice(0,7).reduce((s,x)=>s+x.h,0);
+      document.getElementById('sleepStats').innerHTML = `Total hrs (last 7 entries): <b>${last7.toFixed(1)}</b>`;
+    }
+    function delSleep(idx){const list=getSleep();list.splice(idx,1);setSleep(list)}
 
-/* Visual helpers & boot */
-function drawMood(){ const c=$('moodCanvas'); if(!c) return; const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); const v = Number($('moodValue').textContent||5); const w = (v/10)*(c.width-40); ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#2163ff'; ctx.fillRect(20, c.height/2-18, w, 36); ctx.fillStyle='#0f1724'; ctx.font='14px system-ui'; ctx.fillText(`Mood: ${v}`,22,c.height/2-24); }
+    /* =============================
+       HYDRATION — goals only
+       ============================= */
+    const WGOAL='water.goal.v1';
+    const WNOW='water.now.v1:'+(new Date()).toDateString(); // daily key by date
+    function loadWater(){
+      const goal= +(localStorage.getItem(WGOAL)||0);
+      const now= +(localStorage.getItem(WNOW)||0);
+      document.getElementById('waterGoal').value = goal||2000;
+      document.getElementById('waterGoalText').textContent = goal;
+      document.getElementById('waterNow').textContent = now;
+      const pct = goal? Math.min(100, Math.round(now/goal*100)) : 0;
+      document.getElementById('waterBar').style.width = pct+'%';
+    }
+    function setGoal(){
+      const v= +document.getElementById('waterGoal').value || 0;
+      localStorage.setItem(WGOAL, v);
+      loadWater();
+      emitAI2('water:goal:'+v);
+    }
+    function addWater(ml){
+      const now= +(localStorage.getItem(WNOW)||0) + ml;
+      localStorage.setItem(WNOW, now);
+      loadWater();
+      emitAI2('water:add:'+ml);
+    }
+    function resetWater(){localStorage.setItem(WNOW,0);loadWater();emitAI2('water:reset')}
 
-(function boot(){
-  try{ window._lt_water = Number(localStorage.getItem('lt_water')||0); }catch(e){ window._lt_water = 0; }
-  $('waterConsumed').textContent = window._lt_water;
-  $('waterRemaining').textContent = Math.max(Number($('goalWater').value||0)-window._lt_water,0);
-  drawWater(); drawMood(); drawMealsBar(); drawSleepBar();
-  document.querySelectorAll('.tile').forEach(t => t.addEventListener('keydown', e => { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); t.click(); } }));
-})();
+    /* =============================
+       TO‑DO & REMINDERS — Microsoft To Do–style
+       ============================= */
+    const TKEY='todo.list.v1';
+    function getTasks(){try{return JSON.parse(localStorage.getItem(TKEY)||'[]')}catch{return []}}
+    function setTasks(list){localStorage.setItem(TKEY, JSON.stringify(list));renderTasks()}
 
-function updateLeftTotals(){ $('todayCaloriesLeft').textContent = $('todayCalories').textContent || '0'; $('waterConsumedLeft').textContent = $('waterConsumed').textContent || '0'; }
+    function addTask(){
+      const title=document.getElementById('todoTitle').value.trim();
+      const due=document.getElementById('todoDue').value;
+      const every=+document.getElementById('todoEvery').value||0;
+      const notes=document.getElementById('todoNotes').value.trim();
+      const star=document.getElementById('todoStar').checked;
+      if(!title){alert('Enter a task title');return}
+      const id='t'+Date.now();
+      const t={id,title,due,notes,star,done:false,every,createdAt:Date.now(),nextPing: every? Date.now()+every*60000 : 0};
+      const list=getTasks();
+      list.unshift(t);
+      setTasks(list);
+      emitAI2('todo:add:'+id);
+      // clear inputs
+      document.getElementById('todoTitle').value='';
+      document.getElementById('todoDue').value='';
+      document.getElementById('todoEvery').value='';
+      document.getElementById('todoNotes').value='';
+      document.getElementById('todoStar').checked=false;
+    }
+    function toggleDone(id){
+      const list=getTasks();
+      const t=list.find(x=>x.id===id); if(!t) return;
+      t.done=!t.done; if(t.done) t.nextPing=0; // stop reminders if completed
+      setTasks(list); emitAI2('todo:done:'+id);
+    }
+    function toggleStar(id){
+      const list=getTasks();
+      const t=list.find(x=>x.id===id); if(!t) return; t.star=!t.star; setTasks(list); emitAI2('todo:star:'+id);
+    }
+    function delTask(id){
+      const list=getTasks().filter(x=>x.id!==id);
+      setTasks(list); emitAI2('todo:delete:'+id);
+    }
+    function clearDone(){const list=getTasks().filter(x=>!x.done); setTasks(list); emitAI2('todo:clear_done')}
+    function clearAllTasks(){if(confirm('Delete all tasks?')){setTasks([]); emitAI2('todo:clear_all')}}
 
-/* Host bridge - import meals programmatically from App Inventor or host */
-window.LifeTrack = {
-  importMeals: function(list){ // list = [{name,calories,portion,ts}]
-    const cur = loadMeals(); (list||[]).forEach(i=> cur.push(i)); saveMeals(cur); drawMealsBar();
-  },
-  getMeals: function(){ return loadMeals(); },
-  getSettingsKey: function(){ return SETTINGS_KEY; }
-};
-</script>
+    function renderTasks(){
+      const list=getTasks();
+      const box=document.getElementById('todoList');
+      box.innerHTML='';
+      // sort: starred first, then by due, then by created
+      list.sort((a,b)=> (b.star-a.star) || (new Date(a.due||0)-new Date(b.due||0)) || (b.createdAt-a.createdAt));
+      list.forEach(t=>{
+        const dueTxt = t.due? new Date(t.due).toLocaleString(): 'No due';
+        const row=document.createElement('div');
+        row.className='item';
+        row.innerHTML = `
+          <div class="row" style="gap:8px;align-items:center">
+            <label style="display:flex;gap:8px;align-items:center;flex:1">
+              <input type="checkbox" ${t.done?'checked':''} onchange="toggleDone('${t.id}')"/>
+              <span class="${t.done?'strike':''}"><b>${escapeHTML(t.title)}</b></span>
+            </label>
+            <button class="btn small ghost" title="Star" onclick="toggleStar('${t.id}')">${t.star?'★':'☆'}</button>
+            <button class="btn small ghost" title="Delete" onclick="delTask('${t.id}')">✕</button>
+          </div>
+          <div class="row" style="margin-top:6px;gap:8px">
+            <span class="pill">Due: ${dueTxt}</span>
+            ${t.every? `<span class="pill">Every ${t.every} min</span>`:''}
+          </div>
+          ${t.notes? `<div class="muted" style="margin-top:6px">${escapeHTML(t.notes)}</div>`:''}
+        `;
+        box.appendChild(row);
+      });
+      document.getElementById('todoSummary').textContent = `${list.length} task${list.length!==1?'s':''}`;
+    }
+
+    // Reminder heartbeat — checks repeating reminders and due times
+    setInterval(()=>{
+      const list=getTasks(); let changed=false; const now=Date.now();
+      list.forEach(t=>{
+        if(t.done) return;
+        // repeating reminders
+        if(t.every && (!t.nextPing || now>=t.nextPing)){
+          t.nextPing = now + t.every*60000; changed=true;
+          emitAI2('todo:reminder:'+t.id);
+          try{ alert('Reminder: '+t.title); }catch{}
+        }
+        // one‑off due reminder (when due passes); emits once
+        if(!t.every && t.due){
+          const dueTs = +new Date(t.due);
+          if(dueTs && now>=dueTs && !t._dueFired){
+            t._dueFired = true; changed=true;
+            emitAI2('todo:due:'+t.id);
+            try{ alert('Task due: '+t.title); }catch{}
+          }
+        }
+      });
+      if(changed) setTasks(list);
+    }, 60000); // check every minute
+
+    function escapeHTML(s){return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
+
+    /* =============================
+       SETTINGS — theme & fonts (10 options)
+       ============================= */
+    const SCONF='settings.v1';
+    function applyTheme(mode){
+      const root=document.getElementById('appRoot');
+      root.classList.remove('theme-dark','theme-purple');
+      if(mode==='dark') root.classList.add('theme-dark');
+      if(mode==='purple') root.classList.add('theme-purple');
+    }
+    function applyFontSize(px){document.documentElement.style.setProperty('--font-size', px+'px')}
+    function applyFont(kind){
+      let f='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif';
+      if(kind==='serif') f='Georgia, Cambria, "Times New Roman", serif';
+      if(kind==='mono') f='ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace';
+      if(kind==='inter') f='"Inter", "Segoe UI", Roboto, system-ui, sans-serif';
+      if(kind==='poppins') f='"Poppins", -apple-system, "Segoe UI", Roboto, system-ui, sans-serif';
+      if(kind==='osans') f='"Open Sans", Arial, Helvetica, sans-serif';
+      if(kind==='nunito') f='"Nunito", Verdana, Geneva, sans-serif';
+      if(kind==='robotoslab') f='"Roboto Slab", Cambria, Georgia, serif';
+      if(kind==='merriweather') f='"Merriweather", "Times New Roman", serif';
+      if(kind==='sourcesans') f='"Source Sans 3", "Source Sans Pro", Helvetica, Arial, sans-serif';
+      document.documentElement.style.setProperty('--font', f);
+    }
+    function saveSettings(){
+      const cfg={
+        theme: document.getElementById('themeSel').value,
+        size: document.getElementById('fontSizeSel').value,
+        font: document.getElementById('fontSel').value,
+        user: document.getElementById('userName').textContent
+      };
+      localStorage.setItem(SCONF, JSON.stringify(cfg));
+      applyTheme(cfg.theme);applyFontSize(cfg.size);applyFont(cfg.font);
+      alert('Settings saved');
+      emitAI2('settings:saved');
+    }
+    function resetSettings(){localStorage.removeItem(SCONF);document.getElementById('themeSel').value='light';document.getElementById('fontSizeSel').value='16';document.getElementById('fontSel').value='system';applyTheme('light');applyFontSize(16);applyFont('system');emitAI2('settings:reset')}
+    function loadSettings(){
+      const s=localStorage.getItem(SCONF); if(!s){applyTheme('light');return}
+      try{const cfg=JSON.parse(s);document.getElementById('themeSel').value=cfg.theme||'light';document.getElementById('fontSizeSel').value=cfg.size||'16';document.getElementById('fontSel').value=cfg.font||'system';applyTheme(cfg.theme||'light');applyFontSize(cfg.size||16);applyFont(cfg.font||'system'); if(cfg.user) document.getElementById('userName').textContent=cfg.user;}catch{}
+    }
+
+    /* =============================
+       INIT
+       ============================= */
+    function init(){
+      loadSettings();
+      renderSleep();
+      loadWater();
+      renderTasks();
+    }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
 </body>
 </html>
